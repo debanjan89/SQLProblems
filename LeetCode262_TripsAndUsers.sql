@@ -59,3 +59,17 @@ on t.client_ID=uC.Users_ID
 and uC.Banned='No' and uC.Role='client'
 WHERE Request_At between '2013-10-01' and '2013-10-03'
 group by Request_At
+
+SELECT Request_At AS [Day],CAST((CAST(CancelledReq AS DECIMAL(3,2))/TotReq) AS DECIMAL(3,2)) AS [Cancellation Rate]
+FROM (
+SELECT T.Request_At,SUM(CASE WHEN Status='Completed' THEN 0 ELSE 1 END) AS CancelledReq,COUNT(1) AS TotReq
+FROM Trips AS T
+INNER JOIN Users AS D
+ON T.Driver_ID=D.Users_Id
+INNER JOIN Users AS C
+ON T.Client_Id=C.Users_Id
+WHERE D.Banned='No'
+AND C.Banned='No'
+AND T.Request_At BETWEEN '2013-10-01' AND '2013-10-03'
+GROUP BY T.Request_At
+) AS A
