@@ -1,3 +1,9 @@
+/*
+Write an SQL query to find all dates' id with higher temperature compared to its previous dates (yesterday).
+
+Return the result table in any order.
+*/
+
 SELECT ID
 FROM (
 SELECT *, LAG(Temperature,1) OVER(ORDER BY RecordDate) AS PrevTemp
