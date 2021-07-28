@@ -1,0 +1,32 @@
+/*
+
+*/
+
+
+--CREATE TABLE #Projects(taskID INT, Start_Date DATE, End_Date DATE)
+
+--INSERT INTO #Projects
+--SELECT 1,'2015-10-01','2015-10-02' UNION ALL
+--SELECT 2,'2015-10-02','2015-10-03' UNION ALL
+--SELECT 3,'2015-10-03','2015-10-04' UNION ALL
+--SELECT 4,'2015-10-13','2015-10-14' UNION ALL
+--SELECT 5,'2015-10-14','2015-10-15' UNION ALL
+--SELECT 6,'2015-10-28','2015-10-29' UNION ALL
+--SELECT 7,'2015-10-30','2015-10-31'
+
+SELECT *
+FROM (
+SELECT * , LEAD(End_Date) OVER(ORDER BY End_Date) as NextDt
+FROM #Projects
+) AS A
+WHERE DATEDIFF(D,End_Date,NextDt)>1
+
+;WITH CTE_Projects AS 
+(
+  SELECT Start_Date, End_Date, ROW_NUMBER() OVER (ORDER BY Start_Date) AS RowNumber
+  FROM #Projects WITH (NOLOCK)
+)
+SELECT MIN(Start_Date), MAX(End_Date) 
+FROM CTE_Projects WITH (NOLOCK)
+GROUP BY DATEDIFF(DAY, RowNumber, Start_Date)
+ORDER BY DATEDIFF(DAY, MIN(Start_Date), MAX(End_Date)), MIN(Start_Date)
