@@ -60,3 +60,33 @@ FROM cteResult AS r GROUP BY r.Submission_date )a
 INNER JOIN #Hackers AS h 
 ON h.Hacker_Id = a.Hacker_ID 
 ORDER BY Submission_date
+
+------------------------------------------------------
+-- Own Solution
+
+WITH CTE AS ( 
+select Submission_Date,count(distinct hacker_id) AS Cnt
+from (
+select *
+, DENSE_RANK() OVER(ORDER BY Submission_Date) AS s_day 
+, DENSE_RANK() OVER(PARTITION BY hacker_id ORDER BY Submission_Date) as s_count
+from #submissions
+) as A
+WHERE s_day=s_count
+GROUP BY Submission_Date
+)
+SELECT b.Submission_date,c.cnt,h.hacker_id,name
+FROM (
+select submission_date,hacker_id,ROW_NUMBER() OVER(PARTITION BY Submission_Date ORDER BY DailySubmissionCnt DESC,Hacker_ID) AS HRank
+FROM (
+select submission_date, hacker_id,count(submission_id) AS DailySubmissionCnt
+from #submissions
+group by submission_date,hacker_id
+) AS A
+) AS B
+INNER JOIN #hackers as h
+ON h.hacker_id=b.hacker_id
+INNER JOIN CTE as c
+ON b.Submission_date=c.Submission_date
+WHERE HRank=1
+ORDER BY b.Submission_date
