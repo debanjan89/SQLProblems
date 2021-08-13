@@ -58,3 +58,16 @@
 -- | 2         | "28 Letters"       |
 -- | 5         | "The Hunger Games" |
 -- +-----------+--------------------+
+
+SELECT book_id, name
+FROM (
+    SELECT b.book_id, b.name, SUM(quantity)
+    FROM Orders as o 
+    INNER JOIN Books as b 
+    ON o.book_id=b.book_id
+    WHERE b.available_from<'2019-05-23'
+    AND o.dispatch_date>='2018-05-23'
+    GROUP BY b.book_id, b.name
+    HAVING SUM(quantity)<10
+) AS A
+
